@@ -4740,48 +4740,51 @@ $(function () {
           priceNodes: priceNodes,
         };
 
-        l.abort(), l = $.ajax({
-          type: "get",
-          dataType: "json",
-          scriptCharset: "utf-8",
-          url: url,
-          beforeSend: function(xhr) {
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-          },
-          // headers: {
-          //   referer: "https://dapanyuntu.com/"
-          // },
-          data: "",
-          success: function(t) {
-              //console.info("e : "+ JSON.stringify(e))
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+        // l.abort(), l = $.ajax({
+        //   type: "get",
+        //   dataType: "json",
+        //   scriptCharset: "utf-8",
+        //   url: url,
+        //   beforeSend: function(xhr) {
+        //     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        //   },
+        //   // headers: {
+        //   //   referer: "https://dapanyuntu.com/"
+        //   // },
+        //   data: "",
+        //   success: function(t) {
+        //       //console.info("e : "+ JSON.stringify(e))
               
-              var nodes = t.data;
-              console.log(nodes)
-              var priceNodes = new Array();
-              var stocks = {};
+        //       var nodes = t.data;
+        //       console.log(nodes)
+        //       var priceNodes = new Array();
+        //       var stocks = {};
 
-              stocks = t.data;
+        //       stocks = t.data;
 
-              var additional = {};
-              var now = new Date();
-              $.each(stocks, function(prop, val) {
-                  if (condition === "act_date") {
-                      if (nodes[prop] != null && nodes[prop] !== "") {
-                          var date = new Date(nodes[prop]);
-                          additional[prop] = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-                          nodes[prop] = date > now ? -1 : 1;
-                      } else {
-                          additional[prop] = "--";
-                          nodes[prop] = null;
-                      }
-                  } else {
-                      //console.log("渲染云图的value："+val);
-                      var arr = val.split("|");
-                      nodes[prop] = isNaN(arr[0]) ? null : parseFloat(arr[0]);
-                      priceNodes[prop] = arr[1];
+        //       var additional = {};
+        //       var now = new Date();
+        //       $.each(stocks, function(prop, val) {
+        //           if (condition === "act_date") {
+        //               if (nodes[prop] != null && nodes[prop] !== "") {
+        //                   var date = new Date(nodes[prop]);
+        //                   additional[prop] = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+        //                   nodes[prop] = date > now ? -1 : 1;
+        //               } else {
+        //                   additional[prop] = "--";
+        //                   nodes[prop] = null;
+        //               }
+        //           } else {
+        //               //console.log("渲染云图的value："+val);
+        //               var arr = val.split("|");
+        //               nodes[prop] = isNaN(arr[0]) ? null : parseFloat(arr[0]);
+        //               priceNodes[prop] = arr[1];
 
-                  }
-              })
+        //           }
+        //       })
               var data = { additional: additional, nodes: nodes ,priceNodes: priceNodes};
 
             
