@@ -4785,7 +4785,7 @@ $(function () {
 
         //           }
         //       })
-              var data = { additional: additional, nodes: nodes ,priceNodes: priceNodes};
+              // var data = { additional: additional, nodes: nodes ,priceNodes: priceNodes};
 
             
         AppDispatcher.handleServerAction({
@@ -4794,7 +4794,7 @@ $(function () {
         });
                 },
         //     })
-      })
+      // })
     },
 
       publishMap: function (data) {
@@ -8936,7 +8936,7 @@ $(function () {
         var dict_hk_px = {};
         var dict_hk_chg = {};
         var dict_hk_pct = {};
-
+//
         for (var i = 0; i < result.length; i++) {
           dict_hk_mkt[result[i]["f12"]] = result[i]["f13"];
           dict_hk_name[result[i]["f12"]] = result[i]["f14"];
