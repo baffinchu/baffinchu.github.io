@@ -18947,7 +18947,7 @@ $(function () {
                           className: "ticker",
                           colSpan: "5",
                           style: {
-                            fontSize: "90%",
+                            // fontSize: "90%",
                             paddingTop: "10",
                             paddingRight: "10",
                             textAlign: "right",
@@ -19002,7 +19002,7 @@ $(function () {
                           className: "ticker",
                           colSpan: "2",
                           style: {
-                            fontSize: "120%",
+                            fontSize: "150%",
                             paddingRight: "10",
                             textAlign: "right",
                           },
@@ -19026,7 +19026,7 @@ $(function () {
                           className: "ticker",
                           colSpan: "2",
                           style: {
-                            fontSize: "150%",
+                            fontSize: "200%",
                             paddingRight: "10",
                             textAlign: "right",
                           },
@@ -19073,7 +19073,7 @@ $(function () {
                           className: "ticker",
                           colSpan: "2",
                           style: {
-                            fontSize: "80%",
+                            // fontSize: "80%",
                             paddingRight: "10",
                             textAlign: "right",
                           },
