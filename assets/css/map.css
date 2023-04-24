@@ -334,3 +334,11 @@ body.has-map {
 .welcome_btn .showTab {
   width: 25px !important;
 }
+
+#hover table .hovered {
+  color: #fff;
+  /* font-size: 21px; */
+  font-weight: 700;
+  border-bottom: none;
+  height: 21px
+}
