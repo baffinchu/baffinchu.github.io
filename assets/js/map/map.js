@@ -53,7 +53,7 @@ function drawMap(color, ignoreAuth) {
       return 0;
     });
 
-  const response = fetch('../data/cn_mkt_val.json');
+  const response = fetch('https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/cn_mkt_val.json');
   const result = response.data;
 
   sessionStorage.setItem(tmpCode, JSON.stringify(result));
