@@ -9851,7 +9851,10 @@ $(function () {
     }
 
     function isSVGSupported() {
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      const svg = document.createElementNS(
+        "https://www.w3.org/2000/svg",
+        "svg"
+      );
       return !!(document.createElementNS && svg.createSVGRect);
     }
 
@@ -17147,7 +17150,7 @@ $(function () {
     ) {
       window.ignoreAuth = ignoreAuth;
       // if (!u())
-      //     return document.getElementById("body").innerHTML = '<h1 style="color: #707990; text-align: center">Your browser is no longer supported. Please, <a href="http://whatbrowser.org/" target="_blank" style="color: #fff">upgrade your browser.</a></h1>',
+      //     return document.getElementById("body").innerHTML = '<h1 style="color: #707990; text-align: center">Your browser is no longer supported. Please, <a href="https://whatbrowser.org/" target="_blank" style="color: #fff">upgrade your browser.</a></h1>',
       //         void (document.getElementById("map").style.width = "100%");
       l.isWidget() ||
         (React.render(
@@ -18169,7 +18172,7 @@ $(function () {
             var stockType = prefix == "SZ" ? 0 : 1;
             if (isTdxw()) {
               window.location =
-                "http://www.treeid/breed_" + stockType + d.id.substring(0, 6);
+                "https://www.treeid/breed_" + stockType + d.id.substring(0, 6);
             } else {
               window.open(
                 "https://xueqiu.com/S/" + prefix + d.id.substring(0, 6)
@@ -18772,7 +18775,7 @@ $(function () {
       //       var price = 0;
       //       function ajaxCall() {
       //       $.ajax({
-      //         url: "http://push2.eastmoney.com/api/qt/ulist/get?pn=1&fields=f2&secids="+upOrDown+"."+stockCode,
+      //         url: "https://push2.eastmoney.com/api/qt/ulist/get?pn=1&fields=f2&secids="+upOrDown+"."+stockCode,
       //         dataType: 'json',
       //         async: false,
       //         success: function(response) {
@@ -18900,7 +18903,7 @@ $(function () {
                     //       className: "smallLine",
                     //       width: "100%",
                     //       //selected stocks
-                    //       src: "http://webquotepic.eastmoney.com/GetPic.aspx?nid="+upOrDown+"."+stockCode+"&imageType=RJY"//"http://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                    //       src: "https://webquotepic.eastmoney.com/GetPic.aspx?nid="+upOrDown+"."+stockCode+"&imageType=RJY"//"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
                     //
                     //   })), React.createElement("td", {
                     //       className: "ticker",
@@ -18990,7 +18993,7 @@ $(function () {
                             upOrDown +
                             "." +
                             stockCode +
-                            "&imageType=RJY", //"http://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                            "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
                         })
                       ),
                       React.createElement(
@@ -19120,7 +19123,7 @@ $(function () {
                             filter: "invert(1)", //"saturate(0) grayscale(0) brightness(100) contrast(100)"
                           },
                           src:
-                            "http://image.sinajs.cn/newchart/daily/n/" +
+                            "https://image.sinajs.cn/newchart/daily/n/" +
                             prefix +
                             stockCode +
                             ".gif",
@@ -19187,13 +19190,13 @@ $(function () {
                                   ? "hue-rotate(-120deg)"
                                   : "hue-rotate(120deg)", //"saturate(0) grayscale(1) brightness(10) contrast(10)"
                             },
-                            //适配http://webquotepic.eastmoney.com/GetPic.aspx?nid=0.000651&imageType=RJY
+                            //适配https://webquotepic.eastmoney.com/GetPic.aspx?nid=0.000651&imageType=RJY
                             src:
-                              "http://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
+                              "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
                               upOrDown +
                               "." +
                               listStockCode +
-                              "&imageType=RJY", //"http://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                              "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
                           })
                         ),
                         React.createElement(
