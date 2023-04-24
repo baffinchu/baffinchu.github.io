@@ -18986,7 +18986,7 @@ $(function () {
                           },
                           //selected stocks
                           src:
-                            "http://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
+                            "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
                             upOrDown +
                             "." +
                             stockCode +
