@@ -15805,7 +15805,7 @@ $(function () {
           isWidget: !0,
         });
       },
-    };
+    });
   },
   21: function (e, t) {
     var Sparkline = React.createClass({
