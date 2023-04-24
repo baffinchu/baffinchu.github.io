@@ -10263,7 +10263,7 @@ $(function () {
             var stocks = {};
 
             stocks = t.data;
-
+            console.log("nodes: ", nodes);
             var additional = {};
             var now = new Date();
             $.each(stocks, function (prop, val) {
