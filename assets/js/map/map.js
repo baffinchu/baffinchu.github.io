@@ -97,9 +97,9 @@ function drawMapUS(locale, color, ignoreAuth) {
 
   const treemap = d3.layout
     .treemap()
-    .sort((d1, d2) => d1.scale - d2.scale)
+    .sort((d1, d2) => d1.value - d2.value)
     .size([width, height])
-    .value((d) => d.scale)
+    .value((d) => d.value)
     .padding((d) => {
       if (d.depth === 1) {
         return [17, 1, 1, 1];
@@ -128,6 +128,10 @@ function drawMapUS(locale, color, ignoreAuth) {
       }
       return obj;
     }, {});
+
+    console.log("aaa: ", result);
+    console.log("ooo: ", nodes);
+    console.log("maperrf: ", mapPerf);
 
     const mapData = nodes[0];
     initMap(width, mapData, color, ignoreAuth);
