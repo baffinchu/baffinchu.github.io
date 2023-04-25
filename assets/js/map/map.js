@@ -18,7 +18,6 @@ function initMap(width, mapData, color, ignoreAuth, price) {
   restoreParents(mapData);
   restorePerf(mapData);
   initCanvas(mapData, "sec", "", width, color, "", "", true, ignoreAuth, price);
-  initCanvas(mapData, "sec", "", width, color, "", "", true, ignoreAuth, price);
 }
 
 function drawMap(color, ignoreAuth) {
@@ -3292,7 +3291,7 @@ $(function () {
           left: 1,
         },
         minZoom: 1,
-        maxZoom: 3,
+        maxZoom: 5,
         dataIndex: 75,
         background: "#262931",
         map: "#262931",
@@ -4684,7 +4683,7 @@ $(function () {
             var stocks = {};
 
             stocks = t.data;
-            console.log("nodes: ", nodes);
+            // console.log("nodes: ", nodes);
             var additional = {};
             var now = new Date();
             $.each(stocks, function (prop, val) {
