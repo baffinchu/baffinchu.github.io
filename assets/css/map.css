@@ -342,3 +342,9 @@ body.has-map {
   border-bottom: none;
   height: 21px
 }
+
+#hover .sparkline.white path {
+  stroke: #fff;
+  stroke-width: 1.5px;
+    fill: none;
+}

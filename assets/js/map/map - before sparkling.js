@@ -129,6 +129,10 @@ function drawMapUS(locale, color, ignoreAuth) {
       return obj;
     }, {});
 
+    console.log("aaa: ", result);
+    console.log("ooo: ", nodes);
+    console.log("maperrf: ", mapPerf);
+
     const mapData = nodes[0];
     initMap(width, mapData, color, ignoreAuth);
   }
@@ -5595,7 +5599,7 @@ $(function () {
               key: "updatePerfUS",
               value: function (data) {
                 var t = data.nodes;
-                // console.log(t);
+                console.log(t);
                 var additional = data.additional;
 
                 this.nodes.forEach(function (e) {
@@ -8303,7 +8307,7 @@ $(function () {
               break;
 
             case "us":
-              // console.log(t);
+              console.log(t);
               var stockCode = t.name;
               var a =
                   this.state.sparklinesData &&
@@ -8323,58 +8327,6 @@ $(function () {
                 l =
                   ("geo" !== o ? t.parent.parent.name + " - " : "") +
                   t.parent.name;
-
-              var data = [
-                240.22, 242.58, 242.04, 240.61, 248, 248.16, 242.71, 247.81,
-                252.75, 264.6, 258.35, 256.77, 267.56, 266.73, 263.62, 263.1,
-                271.32, 272.17, 269.32, 262.15, 258.06, 252.67, 251.51, 254.77,
-                249.22, 250.16, 249.42, 246.27, 251.11, 255.29, 256.87, 254.15,
-                253.7, 252.32, 248.59, 253.92, 260.79, 265.44, 276.2, 279.43,
-                272.23, 273.78, 272.29, 277.66, 280.57, 276.38, 275.23, 280.51,
-                284.05, 288.3, 287.23, 287.18, 284.34, 291.6, 289.39, 282.83,
-                283.49, 289.84, 286.14, 288.8, 288.37, 288.45, 286.11, 285.76,
-                281.77,
-              ];
-
-              url =
-                "https://finviz.com/api/map_sparklines.ashx?t=" +
-                t.name +
-                "&ty=sec";
-
-              // $.getJSON(url, function (response) {
-              //   const result = response[t.name];
-
-              //   sessionStorage.setItem(tmpCode, JSON.stringify(result));
-              //   render(treemap, result, color, ignoreAuth);
-              // });
-
-              x = d3.scale
-                .linear()
-                .range([
-                  0,
-                  document.getElementById("hover-wrapper").scrollWidth * 0.6,
-                ])
-                .domain([0, data.length]);
-              y = d3.scale
-                .linear()
-                .range([100 - 4, 0])
-                .domain(
-                  d3.extent(data, function (d) {
-                    return d;
-                  })
-                );
-              line = d3.svg
-                .line()
-                .interpolate("basis")
-                .x(function (d, i) {
-                  return x(i);
-                })
-                .y(function (d, i) {
-                  return y(d);
-                });
-
-              market = mkt_us["dict_us_mkt"][stockCode];
-              // console.log(market);
 
               return React.createElement(
                 "div",
@@ -8443,40 +8395,25 @@ $(function () {
                           // paddingTop: "16",
                           // paddingRight: "16",
                         },
-                        // React.createElement(
-                        //   "svg",
-                        //   {
-                        //     className: "sparkline white",
-                        //     width:
-                        //       document.getElementById("hover-wrapper")
-                        //         .scrollWidth * 0.6,
-                        //     height: 100,
-                        //   },
-                        //   React.createElement(
-                        //     "g",
-                        //     {
-                        //       transform: "translate(0, 2)",
-                        //     },
-                        //     React.createElement("path", {
-                        //       d: line(data),
-                        //     })
-                        //   )
-                        // )
-                        React.createElement("img", {
-                          className: "smallLine",
+                        React.createElement("svg", {
+                          className: "sparkline white",
                           width: "100%",
-                          style: {
-                            filter:
-                              "saturate(0) grayscale(1) brightness(10) contrast(10)",
-                          },
-                          //selected stocks
-                          src:
-                            "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
-                            market +
-                            "." +
-                            stockCode +
-                            "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
                         })
+                        // React.createElement("img", {
+                        //   className: "smallLine",
+                        //   width: "100%",
+                        //   style: {
+                        //     filter:
+                        //       "saturate(0) grayscale(1) brightness(10) contrast(10)",
+                        //   },
+                        //   //selected stocks
+                        //   src:
+                        //     "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
+                        //     upOrDown +
+                        //     "." +
+                        //     stockCode +
+                        //     "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                        // })
                       ),
                       React.createElement(
                         "td",
@@ -8489,7 +8426,7 @@ $(function () {
                             textAlign: "right",
                           },
                         },
-                        stockCode
+                        t.name
                       )
                     ),
 
@@ -8606,7 +8543,8 @@ $(function () {
                             filter: "invert(1)", //"saturate(0) grayscale(0) brightness(100) contrast(100)"
                           },
                           src:
-                            "http://image.sinajs.cn/newchart/usstock/daily/" +
+                            "https://image.sinajs.cn/newchart/daily/n/" +
+                            prefix +
                             stockCode +
                             ".gif",
                         })
@@ -8671,9 +8609,9 @@ $(function () {
                             //适配https://webquotepic.eastmoney.com/GetPic.aspx?nid=0.000651&imageType=RJY
                             src:
                               "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
-                              market +
+                              upOrDown +
                               "." +
-                              stockCode +
+                              listStockCode +
                               "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
                           })
                         ),
