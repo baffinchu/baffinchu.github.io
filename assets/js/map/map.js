@@ -20,7 +20,7 @@ function initMap(width, mapData, color, ignoreAuth, price) {
   initCanvas(mapData, "sec", "", width, color, "", "", true, ignoreAuth, price);
 }
 
-function drawMap(color, ignoreAuth) {
+function drawMap(locale, color, ignoreAuth) {
   const calculateHeight = () => {
     let height =
       Math.max(document.documentElement.clientHeight, window.innerHeight || 0) -
@@ -57,6 +57,63 @@ function drawMap(color, ignoreAuth) {
 
   $.getJSON(url, function (response) {
     const result = response.data;
+
+    sessionStorage.setItem(tmpCode, JSON.stringify(result));
+    render(treemap, result, color, ignoreAuth);
+  });
+
+  function render(treemap, result, color, ignoreAuth) {
+    const nodes = treemap.nodes(result);
+
+    const mapPerf = nodes.reduce((obj, node) => {
+      if (node.condition) {
+        obj[node.name] = node.condition;
+      }
+      return obj;
+    }, {});
+
+    const mapData = nodes[0];
+    initMap(width, mapData, color, ignoreAuth);
+  }
+}
+
+function drawMapUS(locale, color, ignoreAuth) {
+  const calculateHeight = () => {
+    let height =
+      Math.max(document.documentElement.clientHeight, window.innerHeight || 0) -
+      10;
+
+    if (!$(".narrow").is(":visible")) {
+      height -= 280;
+    }
+
+    return height;
+  };
+
+  const height = calculateHeight();
+  $("#body").height(height);
+
+  const width = $("#main-body").width();
+
+  const treemap = d3.layout
+    .treemap()
+    .sort((d1, d2) => d1.scale - d2.scale)
+    .size([width, height])
+    .value((d) => d.scale)
+    .padding((d) => {
+      if (d.depth === 1) {
+        return [17, 1, 1, 1];
+      } else if (d.depth === 2) {
+        return [12, 1, 2, 1];
+      }
+      return 0;
+    });
+
+  url =
+    "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/us_mkt_val.json";
+
+  $.getJSON(url, function (response) {
+    const result = response;
 
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
@@ -4721,7 +4778,65 @@ $(function () {
           },
         });
       },
+      updateDataUS: function (isFirst) {
+        var ignoreAuth = window.ignoreAuth;
+        if (!isFirst && window.pollingChanged) {
+          window.pollingChanged = false;
+          return;
+        }
 
+        var url = null;
+        var condition = "mkt_idx.cur_chng_pct"; //$('#select-change').val()
+        var url =
+          "https://api.minli.wang/dpyt/getMapParamDataV2?param=" + condition;
+
+        $.ajax({
+          type: "GET",
+          //url: "https://11.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=99999&np=1&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f4,f12",
+          url: "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/us_pct.json",
+          dataType: "json",
+          async: false,
+          success: function (t) {
+            var nodes = t.nodes;
+            var stocks = {};
+
+            stocks = t.nodes;
+            // console.log("nodes: ", nodes);
+            var additional = {};
+            var now = new Date();
+            $.each(stocks, function (prop, val) {
+              if (condition === "act_date") {
+                if (nodes[prop] != null && nodes[prop] !== "") {
+                  var date = new Date(nodes[prop]);
+                  additional[prop] =
+                    date.getFullYear() +
+                    "-" +
+                    (date.getMonth() + 1) +
+                    "-" +
+                    date.getDate();
+                  nodes[prop] = date > now ? -1 : 1;
+                } else {
+                  additional[prop] = "--";
+                  nodes[prop] = null;
+                }
+              } else {
+                // var val = parseFloat(val);
+                var arr = val;
+                nodes[prop] = isNaN(val) ? null : parseFloat(val);
+              }
+            });
+            var data = {
+              additional: additional,
+              nodes: nodes,
+            };
+
+            AppDispatcher.handleServerAction({
+              type: ActionTypes.UPDATE_DATA_US,
+              data: data,
+            });
+          },
+        });
+      },
       publishMap: function (data) {
         AppDispatcher.handleViewAction({
           type: ActionTypes.PUBLISH_MAP_STARTED,
@@ -5011,6 +5126,7 @@ $(function () {
         INIT_COMPLETED: null,
         INIT_FAILED: null,
         UPDATE_DATA: null,
+        UPDATE_DATA_US: null,
         UPDATA_MAP: null,
         PUBLISH_MAP_STARTED: null,
         PUBLISH_MAP_COMPLETED: null,
@@ -5462,12 +5578,28 @@ $(function () {
               key: "updatePerf",
               value: function (data) {
                 var t = data.nodes;
+                console.log(t);
                 var priceNodes = data.priceNodes;
                 var additional = data.additional;
 
                 this.nodes.forEach(function (e) {
                   void 0 !== t[e.name] &&
                     (e.perf = t[e.name]) & (e.price = priceNodes[e.name]),
+                    additional[e.name] && (e.additional = additional[e.name]);
+                }),
+                  this.countIndustryPerf && this._updateIndustryPerf(),
+                  this.countSectorPerf && this._updateSectorPerf();
+              },
+            },
+            {
+              key: "updatePerfUS",
+              value: function (data) {
+                var t = data.nodes;
+                console.log(t);
+                var additional = data.additional;
+
+                this.nodes.forEach(function (e) {
+                  void 0 !== t[e.name] && (e.perf = t[e.name]),
                     additional[e.name] && (e.additional = additional[e.name]);
                 }),
                   this.countIndustryPerf && this._updateIndustryPerf(),
@@ -6181,7 +6313,7 @@ $(function () {
           f.updateData(true, ignoreAuth);
           break;
         case "us":
-          f.updateData(true, ignoreAuth);
+          f.updateDataUS(true, ignoreAuth);
           break;
       }
 
@@ -6913,6 +7045,12 @@ $(function () {
             (x = v()),
             mapStore.emitChange();
           break;
+        case ActionTypes.UPDATE_DATA_US:
+          treemap.updatePerfUS(action.data),
+            S++,
+            (x = v()),
+            mapStore.emitChange();
+          break;
         case ActionTypes.PUBLISH_MAP_STARTED:
           (E.shown = !0),
             (E.failed = !1),
@@ -7625,7 +7763,10 @@ $(function () {
           case "us":
             var stockCode = e.name;
             // px =
-            return mkt_us["dict_us_px"][stockCode].toFixed(2);
+            price = mkt_us["dict_us_px"][stockCode];
+            return void 0 !== price && null !== price
+              ? Math.abs(price).toFixed(2)
+              : "--";
             break;
           case "United States Overall":
             var stockCode = e.name;
@@ -8162,11 +8303,8 @@ $(function () {
               break;
 
             case "us":
-              var stockCode = t.id.substr(0, t.id.indexOf("."));
-
-              var brd = t.id.split(".")[1];
-              var upOrDown = brd == "SH" ? 1 : 0;
-              var prefix = t.id.substr(t.id.indexOf(".") + 1).toLowerCase();
+              console.log(t);
+              var stockCode = t.name;
               var a =
                   this.state.sparklinesData &&
                   this.state.sparklinesData[t.name],
@@ -8226,7 +8364,7 @@ $(function () {
                             textAlign: "right",
                           },
                         },
-                        stockCode
+                        t.description
                       )
                     ),
 
@@ -8428,9 +8566,9 @@ $(function () {
                           e.state.sparklinesData &&
                           e.state.sparklinesData[t.name],
                         d = c ? e.state.sparklinesData[t.name] : [];
-                      var listStockCode = t.id.substr(0, t.id.indexOf("."));
-                      var brd = t.id.split(".")[1];
-                      var upOrDown = brd == "SH" ? 1 : 0;
+                      var listStockCode = t.description; //id.substr(0, t.id.indexOf("."));
+                      // var brd = t.id.split(".")[1];
+                      // var upOrDown = brd == "SH" ? 1 : 0;
                       return React.createElement(
                         "tr",
                         {
