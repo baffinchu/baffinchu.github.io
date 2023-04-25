@@ -4490,7 +4490,7 @@ $(function () {
       isPremarket: isPremarket,
     };
   },
-  20: function (e, t, a) {
+  Canvas: function (e, t, a) {
     function zoomIn(scale, tx, ty) {
       let targetScale = scale;
 
@@ -6097,7 +6097,7 @@ $(function () {
       r = a(91),
       o = a("Select"),
       s = (a(46), a(94)),
-      f = a(20),
+      f = a("Canvas"),
       l = a(9),
       b = a("Support"), // width
       u = b.isCanvasSupported;
@@ -6178,6 +6178,9 @@ $(function () {
 
       switch (locale) {
         case "cn":
+          f.updateData(true, ignoreAuth);
+          break;
+        case "us":
           f.updateData(true, ignoreAuth);
           break;
       }
@@ -6938,7 +6941,7 @@ $(function () {
   90: function (e, t, a) {
     // console.log("o: ", a("Support").getOffset);
     var c = a(9),
-      n = a(20),
+      n = a("Canvas"),
       d = a("Gradient"),
       i = a(46),
       r = a("Support"),
@@ -7578,7 +7581,7 @@ $(function () {
       d = a("Gradient"),
       mkt_cn = a(100),
       l = a(101),
-      //   mkt_us = a(102),
+      mkt_us = a(102),
       //   mkt_hk = a(103),
       // console.log("101: ", l)
       i = function (e) {
@@ -7619,7 +7622,7 @@ $(function () {
 
             return l["price_dict"][upOrDown + ":" + stockCode];
             break;
-          case "S&P500":
+          case "us":
             var stockCode = e.name;
             // px =
             return mkt_us["dict_us_px"][stockCode].toFixed(2);
@@ -7672,7 +7675,7 @@ $(function () {
               ? (px >= 0 ? "▲ " : "▼ ") + Math.abs(px).toFixed(2)
               : "0.00";
             break;
-          case "S&P500":
+          case "us":
             var stockCode = e.name;
             px = mkt_us["dict_us_chg"][stockCode];
 
@@ -7857,44 +7860,349 @@ $(function () {
                   React.createElement(
                     "tbody",
                     null,
-                    //   React.createElement("tr", {
-                    //       key: t.name + "-hover",
-                    //       className: "hovered",
-                    //       width: "100%",
-                    //       style: {
-                    //           backgroundColor: r(t.perf)
-                    //       }
-                    //   }, React.createElement("td", {colSpan: "2"}, React.createElement("img", {
-                    //       className: "smallLine",
-                    //       width: "100%",
-                    //       //selected stocks
-                    //       src: "https://webquotepic.eastmoney.com/GetPic.aspx?nid="+upOrDown+"."+stockCode+"&imageType=RJY"//"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
-                    //
-                    //   })), React.createElement("td", {
-                    //       className: "ticker",
-                    //       colSpan: "2",
-                    //   }, stockCode, t.name, i(t)
-                    // )),
-                    //////////////////////////////////////////////////////
 
-                    // React.createElement("tr", {
-                    //     key: t.name + "-hover",
-                    //     className: "hovered",
-                    //     width: "100%",
-                    //     style: {
-                    //         backgroundColor: r(t.perf)
-                    //     }
-                    // }, React.createElement("td", {
-                    //   colSpan: "5",
-                    //   style: {
-                    //       paddingLeft: "10",
-                    //       paddingTop: "10",
-                    //       paddingRight: "10",
-                    //   },
-                    //   className: "ticker",
-                    //   // paddingTop: "16",
-                    //   // paddingRight: "16",
-                    // }, stockCode)),
+                    React.createElement(
+                      "tr",
+                      {
+                        key: t.name + "-hover",
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "5",
+                          style: {
+                            // fontSize: "90%",
+                            paddingTop: "10",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        stockCode
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "3",
+                          rowSpan: "4",
+                          style: {
+                            paddingLeft: "10",
+                            paddingTop: "10",
+                            paddingRight: "10",
+                          },
+                          className: "ticker",
+                          // paddingTop: "16",
+                          // paddingRight: "16",
+                        },
+                        React.createElement("img", {
+                          className: "smallLine",
+                          width: "100%",
+                          style: {
+                            filter:
+                              "saturate(0) grayscale(1) brightness(10) contrast(10)",
+                          },
+                          //selected stocks
+                          src:
+                            "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
+                            upOrDown +
+                            "." +
+                            stockCode +
+                            "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                        })
+                      ),
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "150%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        t.name
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "200%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        p(t)
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "150%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        q(t)
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            // fontSize: "80%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        i(t)
+                      )
+                    ),
+
+                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    ///////////////////////////////////////////////////////
+
+                    React.createElement(
+                      "tr",
+                      {
+                        key: t.name + "-hover-description",
+                        className: "hovered is-description",
+                        style: {
+                          backgroundColor: r(t.perf),
+                          height: 10,
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "5",
+                        },
+                        null
+                      )
+                    ),
+                    React.createElement(
+                      "tr",
+                      null,
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "5",
+                          style: {
+                            paddingTop: "10",
+                            paddingBottom: "10",
+                          },
+                        },
+                        React.createElement("img", {
+                          className: "smallLine",
+                          width: "100%",
+                          style: {
+                            filter: "invert(1)", //"saturate(0) grayscale(0) brightness(100) contrast(100)"
+                          },
+                          src:
+                            "https://image.sinajs.cn/newchart/daily/n/" +
+                            prefix +
+                            stockCode +
+                            ".gif",
+                        })
+                      )
+                    ),
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered is-description",
+                        style: {
+                          //backgroundColor: r(t.perf),
+                          height: 10,
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "5",
+                          className: "description",
+                        },
+                        t.description
+                      )
+                    ),
+                    s.map(function (t, a) {
+                      if (a > 40) return null;
+                      var c =
+                          e.state.sparklinesData &&
+                          e.state.sparklinesData[t.name],
+                        d = c ? e.state.sparklinesData[t.name] : [];
+                      var listStockCode = t.id.substr(0, t.id.indexOf("."));
+                      var brd = t.id.split(".")[1];
+                      var upOrDown = brd == "SH" ? 1 : 0;
+                      return React.createElement(
+                        "tr",
+                        {
+                          key: t.name,
+                        },
+                        React.createElement(
+                          "td",
+                          {
+                            className: "smallticker",
+                            // colSpan: "2",
+                          },
+                          listStockCode
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "smallticker",
+                            // colSpan: "2",
+                          },
+                          t.name
+                        ),
+                        React.createElement(
+                          "td",
+                          null,
+                          React.createElement("img", {
+                            className: "smallLine",
+                            width: 60,
+                            style: {
+                              filter:
+                                t.perf < 0
+                                  ? "hue-rotate(-120deg)"
+                                  : "hue-rotate(120deg)", //"saturate(0) grayscale(1) brightness(10) contrast(10)"
+                            },
+                            //适配https://webquotepic.eastmoney.com/GetPic.aspx?nid=0.000651&imageType=RJY
+                            src:
+                              "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
+                              upOrDown +
+                              "." +
+                              listStockCode +
+                              "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                          })
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "change",
+                            style: {
+                              // fontWeight: 800,
+                              color: r(t.perf),
+                            },
+                          },
+                          p(t)
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "change",
+                            // colSpan: "2",
+                            style: {
+                              fontWeight: 900,
+                              color: r(t.perf),
+                            },
+                          },
+                          i(t)
+                        )
+                      );
+                    })
+                  )
+                )
+              );
+
+              break;
+
+            case "us":
+              var stockCode = t.id.substr(0, t.id.indexOf("."));
+
+              var brd = t.id.split(".")[1];
+              var upOrDown = brd == "SH" ? 1 : 0;
+              var prefix = t.id.substr(t.id.indexOf(".") + 1).toLowerCase();
+              var a =
+                  this.state.sparklinesData &&
+                  this.state.sparklinesData[t.name],
+                d =
+                  a && a[a.length - 1]
+                    ? this.state.sparklinesData[t.name][
+                        this.state.sparklinesData[t.name].length - 1
+                      ].toFixed(2)
+                    : "--",
+                r = c.getColorScale(),
+                o = c.getType(),
+                s = t.parent.children.slice().sort(function (e, t) {
+                  return t.dx * t.dy - e.dx * e.dy;
+                }),
+                f = s.length > 15,
+                l =
+                  ("geo" !== o ? t.parent.parent.name + " - " : "") +
+                  t.parent.name;
+
+              return React.createElement(
+                "div",
+                {
+                  id: "hover",
+                  // height: $("#div_map2").height(),
+                },
+                React.createElement("h4", null, l),
+                React.createElement(
+                  "table",
+                  {
+                    className: f ? "is-small" : "",
+                    textAlign: "center",
+                    width: "100%",
+                  },
+                  React.createElement(
+                    "tbody",
+                    null,
 
                     React.createElement(
                       "tr",
@@ -8230,7 +8538,7 @@ $(function () {
     a(58), a(59);
   },
   93: function (e, t, a) {
-    var c = a(20),
+    var c = a("Canvas"),
       n = a(9),
       Search = React.createClass({
         displayName: "Search",
@@ -8374,7 +8682,7 @@ $(function () {
   94: function (e, t, a) {
     "use strict";
     var c = a(9),
-      n = a(20),
+      n = a("Canvas"),
       PublishModal = React.createClass({
         displayName: "PublishModal",
         getInitialState: function () {
@@ -8664,7 +8972,7 @@ $(function () {
     (o.CHANGE_EVENT = "change"), (e.exports = o);
   },
   96: function (e, t, a) {
-    var c = a(20),
+    var c = a("Canvas"),
       n =
         (a("Gradient"),
         React.createClass({
@@ -8829,7 +9137,8 @@ $(function () {
   102: function (e) {
     $.ajax({
       type: "GET",
-      url: "https://11.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=99999&np=1&fs=m:105,m:106,m:107&fields=f2,f3,f4,f12,f13,f14",
+      url: "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/us_px_chg_pct.json",
+      // url: "https://11.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=99999&np=1&fs=m:105,m:106,m:107&fields=f2,f3,f4,f12,f13,f14",
       dataType: "json",
       async: false,
 
