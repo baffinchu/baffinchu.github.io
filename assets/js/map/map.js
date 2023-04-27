@@ -168,7 +168,7 @@ function drawMapHK(color, ignoreAuth) {
       return 0;
     });
 
-  //https://11.push2delay.eastmoney.com/api/qt/clist/get?pn=1&pz=99999&np=1&fs=m:128+t:1,m:128+t:3,m:128+t:4&fields=f1,f2,f3,f4,f12,f14,f20,f100
+  // "https://11.push2delay.eastmoney.com/api/qt/clist/get?pn=1&pz=99999&np=1&fs=m:128+t:1,m:128+t:3,m:128+t:4&fields=f1,f2,f3,f4,f12,f14,f20,f100,f265"
 
   url =
     "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/hk_mkt_val.json";
