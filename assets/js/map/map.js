@@ -116,7 +116,7 @@ function drawMapUS(color, ignoreAuth) {
 
   $.getJSON(url, function (response) {
     const result = response;
-
+    console.log("us raw data: ", result);
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
   });
@@ -132,6 +132,7 @@ function drawMapUS(color, ignoreAuth) {
     }, {});
 
     const mapData = nodes[0];
+    console.log("us: ", mapData);
     initMap(width, mapData, color, ignoreAuth);
   }
 }
@@ -176,23 +177,123 @@ function drawMapHK(color, ignoreAuth) {
   $.getJSON(url, function (response) {
     const result = response.data.diff;
 
-    dict_hk_mkv = {
-      "data": {
-        "children": [],
-        "name": "总量",
-        "id": "HK0"
-      }
-    };
+    // console.log("0: ", result);
 
-    for (let i = 0; i < result.length; i++) {
-      dict_hk_mkv["data"]["children"][] = { name: "123", id: "456" };
+    const dict_hk_mkv = {
+      children: [],
+      name: "总量",
+      value: 0,
+      id: "HK0",
+    };
+    // First, group the companies by industry (f100)
+    const companiesByIndustry = {};
+    result.forEach((company) => {
+      let industry = company.f100.trim();
+      if (industry === "") {
+        industry = "房地产信托基金";
+      }
+      let id = company.f265.trim();
+      if (id === "") {
+        id = "REITS";
+      }
+      if (!companiesByIndustry[industry]) {
+        companiesByIndustry[industry] = [];
+      }
+      companiesByIndustry[industry].push(company);
+    });
+
+    // console.log("1: ", companiesByIndustry);
+
+    for (let i = 0; i < Object.keys(companiesByIndustry).length; i++) {
+      industry = Object.keys(companiesByIndustry)[i];
+      dict_hk_mkv["children"].push({
+        children: [
+          {
+            children: [],
+            name: industry,
+            value: 0,
+            id: "",
+          },
+        ],
+        name: industry,
+        value: 0,
+        id: "",
+      });
+      for (
+        let j = 0;
+        j < companiesByIndustry[Object.keys(companiesByIndustry)[i]].length;
+        j++
+      ) {
+        company = companiesByIndustry[Object.keys(companiesByIndustry)[i]][j];
+        dict_hk_mkv["children"][i]["children"][0]["children"].push({
+          name: company.f14,
+          value: company.f20,
+          id: Number(company.f12),
+          perf: company.f3 / 100,
+          digit: company.f1,
+          px: company.f2 * 10 ** -company.f1,
+          chg: company.f2 * 10 ** -company.f1,
+        });
+
+        dict_hk_mkv["children"][i]["value"] += company.f20;
+        dict_hk_mkv["children"][i]["id"] = company.f265;
+        dict_hk_mkv["value"] += company.f20;
+
+        // console.log(
+        //   ">>> ",
+        //   companiesByIndustry[Object.keys(companiesByIndustry)[i]][j]
+        // );
+      }
     }
 
-    console.log("hk: ", result);
-    console.log("dict: ", dict_hk_mkv);
+    // Then, create a new array of objects with the desired structure
+    // const outputArray = Object.entries(companiesByIndustry).map(
+    //   ([industry, companies]) => {
+    //     const valueSum = companies.reduce(
+    //       (sum, company) => sum + company.f20,
+    //       0
+    //     );
+    //     return {
+    //       children: companies.map((company) => ({
+    //         name: company.f14,
+    //         // industry: company.f100.trim() || "房地产信托基金",
+    //         id: Number(company.f12),
+    //         value: company.f20,
+    //       })),
+    //       name: industry.trim() || "房地产信托基金",
+    //       id: companies[0].f265.trim() || "REITS",
+    //       value: valueSum,
+    //     };
+    //   }
+    // );
 
-    sessionStorage.setItem(tmpCode, JSON.stringify(result));
-    render(treemap, result, color, ignoreAuth);
+    // console.log("2: ", outputArray);
+
+    // // Filter out empty children nodes
+    // const filteredArray = outputArray.filter(
+    //   (industry) => industry.children.length > 0
+    // );
+
+    // // Finally, set the output array as the "children" property of the top-level object
+    // if (filteredArray.length > 0) {
+    //   dict_hk_mkv.children = filteredArray;
+    //   dict_hk_mkv.value = filteredArray.reduce(
+    //     (sum, industry) => sum + industry.value,
+    //     0
+    //   );
+    // }
+
+    console.log("hk: ", dict_hk_mkv);
+
+    // for (let i = 0; i < result.length; i++) {
+    //   dict_hk_mkv["data"]["children"][] = { name: "123", id: "456" };
+    // }
+
+    // console.log("hk: ", outputJson);
+    // console.log("dict: ", dict_hk_mkv);
+
+    sessionStorage.setItem(tmpCode, JSON.stringify(dict_hk_mkv));
+    render(treemap, dict_hk_mkv, color, ignoreAuth);
   });
 
   function render(treemap, result, color, ignoreAuth) {
@@ -206,6 +307,7 @@ function drawMapHK(color, ignoreAuth) {
     }, {});
 
     const mapData = nodes[0];
+    // console.log("wow: ", mapData);
     initMap(width, mapData, color, ignoreAuth);
   }
 }
@@ -5602,7 +5704,8 @@ $(function () {
                       l.industries.push(d)
                   : l.nodes.push(d));
             });
-          } else
+          } //console.log(e);
+          else
             data.children.forEach(function (e) {
               l.sectors.push(e),
                 (e.children || []).forEach(function (e) {
@@ -7933,9 +8036,7 @@ $(function () {
               : "--";
             break;
           case "hk":
-            var stockCode = e.name;
-            px = mkt_hk["dict_hk_px"][stockCode];
-            return px ? px.toFixed(2) : "0.00";
+            return e.px.toFixed(2 + (e.px < 0.25));
             break;
           case "United States Overall":
             var stockCode = e.name;
@@ -7981,12 +8082,7 @@ $(function () {
               : "0.00";
             break;
           case "hk":
-            var stockCode = e.name;
-            px = mkt_us["dict_hk_chg"][stockCode];
-
-            return px
-              ? (px >= 0 ? "▲ " : "▼ ") + Math.abs(px).toFixed(2)
-              : "0.00";
+            return e.chg.toFixed(2 + (e.px < 0.25));
             break;
           case "us":
             var stockCode = e.name;
@@ -8882,7 +8978,7 @@ $(function () {
 
             case "hk":
               // console.log(t);
-              var stockCode = t.name;
+              var stockCode = t.id;
               var a =
                   this.state.sparklinesData &&
                   this.state.sparklinesData[t.name],
@@ -8901,58 +8997,6 @@ $(function () {
                 l =
                   ("geo" !== o ? t.parent.parent.name + " - " : "") +
                   t.parent.name;
-
-              var data = [
-                240.22, 242.58, 242.04, 240.61, 248, 248.16, 242.71, 247.81,
-                252.75, 264.6, 258.35, 256.77, 267.56, 266.73, 263.62, 263.1,
-                271.32, 272.17, 269.32, 262.15, 258.06, 252.67, 251.51, 254.77,
-                249.22, 250.16, 249.42, 246.27, 251.11, 255.29, 256.87, 254.15,
-                253.7, 252.32, 248.59, 253.92, 260.79, 265.44, 276.2, 279.43,
-                272.23, 273.78, 272.29, 277.66, 280.57, 276.38, 275.23, 280.51,
-                284.05, 288.3, 287.23, 287.18, 284.34, 291.6, 289.39, 282.83,
-                283.49, 289.84, 286.14, 288.8, 288.37, 288.45, 286.11, 285.76,
-                281.77,
-              ];
-
-              url =
-                "https://finviz.com/api/map_sparklines.ashx?t=" +
-                t.name +
-                "&ty=sec";
-
-              // $.getJSON(url, function (response) {
-              //   const result = response[t.name];
-
-              //   sessionStorage.setItem(tmpCode, JSON.stringify(result));
-              //   render(treemap, result, color, ignoreAuth);
-              // });
-
-              x = d3.scale
-                .linear()
-                .range([
-                  0,
-                  document.getElementById("hover-wrapper").scrollWidth * 0.6,
-                ])
-                .domain([0, data.length]);
-              y = d3.scale
-                .linear()
-                .range([100 - 4, 0])
-                .domain(
-                  d3.extent(data, function (d) {
-                    return d;
-                  })
-                );
-              line = d3.svg
-                .line()
-                .interpolate("basis")
-                .x(function (d, i) {
-                  return x(i);
-                })
-                .y(function (d, i) {
-                  return y(d);
-                });
-
-              market = mkt_us["dict_us_mkt"][stockCode];
-              // console.log(market);
 
               return React.createElement(
                 "div",
@@ -8994,7 +9038,7 @@ $(function () {
                             textAlign: "right",
                           },
                         },
-                        t.description
+                        stockCode
                       )
                     ),
 
@@ -9018,28 +9062,8 @@ $(function () {
                             paddingRight: "10",
                           },
                           className: "ticker",
-                          // paddingTop: "16",
-                          // paddingRight: "16",
                         },
-                        // React.createElement(
-                        //   "svg",
-                        //   {
-                        //     className: "sparkline white",
-                        //     width:
-                        //       document.getElementById("hover-wrapper")
-                        //         .scrollWidth * 0.6,
-                        //     height: 100,
-                        //   },
-                        //   React.createElement(
-                        //     "g",
-                        //     {
-                        //       transform: "translate(0, 2)",
-                        //     },
-                        //     React.createElement("path", {
-                        //       d: line(data),
-                        //     })
-                        //   )
-                        // )
+
                         React.createElement("img", {
                           className: "smallLine",
                           width: "100%",
@@ -9049,10 +9073,8 @@ $(function () {
                           },
                           //selected stocks
                           src:
-                            "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
-                            market +
-                            "." +
-                            stockCode +
+                            "https://webquotepic.eastmoney.com/GetPic.aspx?nid=116." +
+                            stockCode.toString().padStart(5, "0") +
                             "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
                         })
                       ),
@@ -9067,7 +9089,7 @@ $(function () {
                             textAlign: "right",
                           },
                         },
-                        stockCode
+                        t.name
                       )
                     ),
 
@@ -9184,8 +9206,8 @@ $(function () {
                             filter: "invert(1)", //"saturate(0) grayscale(0) brightness(100) contrast(100)"
                           },
                           src:
-                            "http://image.sinajs.cn/newchart/usstock/daily/" +
-                            stockCode +
+                            "http://image.sinajs.cn/newchart/hk_stock/daily/" +
+                            stockCode.toString().padStart(5, "0") +
                             ".gif",
                         })
                       )
@@ -9210,7 +9232,7 @@ $(function () {
                           e.state.sparklinesData &&
                           e.state.sparklinesData[t.name],
                         d = c ? e.state.sparklinesData[t.name] : [];
-                      var listStockCode = t.description; //id.substr(0, t.id.indexOf("."));
+                      var listStockCode = t.id; //id.substr(0, t.id.indexOf("."));
                       // var brd = t.id.split(".")[1];
                       // var upOrDown = brd == "SH" ? 1 : 0;
                       return React.createElement(
@@ -9224,7 +9246,7 @@ $(function () {
                             className: "smallticker",
                             // colSpan: "2",
                           },
-                          listStockCode
+                          listStockCode.toString().padStart(4, "0")
                         ),
                         React.createElement(
                           "td",
@@ -9248,10 +9270,8 @@ $(function () {
                             },
                             //适配https://webquotepic.eastmoney.com/GetPic.aspx?nid=0.000651&imageType=RJY
                             src:
-                              "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
-                              market +
-                              "." +
-                              stockCode +
+                              "https://webquotepic.eastmoney.com/GetPic.aspx?nid=116." +
+                              listStockCode.toString().padStart(5, "0") +
                               "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
                           })
                         ),
