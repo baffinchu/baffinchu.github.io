@@ -2818,12 +2818,16 @@ Enter some comment.</textarea
             //     valueRange1dArr = ['-4%', '-3%', '-2%', '-1%', '0%', '1%', '2%', '3%', '4%'];
             // getRangeLegend(color1dArr, valueRange1dArr);
             var selectedColor = "";
-            drawMap("cn", selectedColor, true);
+            drawMap(selectedColor, true);
             // alert("china");
             break;
           case "us":
             var selectedColor = "";
-            drawMapUS("us", selectedColor, true);
+            drawMapUS(selectedColor, true);
+            break;
+          case "hk":
+            var selectedColor = "";
+            drawMapHK(selectedColor, true);
             break;
           case "United States Overall":
             var selectedColor = "";

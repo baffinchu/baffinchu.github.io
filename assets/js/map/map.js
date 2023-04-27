@@ -20,7 +20,7 @@ function initMap(width, mapData, color, ignoreAuth, price) {
   initCanvas(mapData, "sec", "", width, color, "", "", true, ignoreAuth, price);
 }
 
-function drawMap(locale, color, ignoreAuth) {
+function drawMap(color, ignoreAuth) {
   const calculateHeight = () => {
     let height =
       Math.max(document.documentElement.clientHeight, window.innerHeight || 0) -
@@ -58,6 +58,8 @@ function drawMap(locale, color, ignoreAuth) {
   $.getJSON(url, function (response) {
     const result = response.data;
 
+    console.log("cn: ", result);
+
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
   });
@@ -77,7 +79,7 @@ function drawMap(locale, color, ignoreAuth) {
   }
 }
 
-function drawMapUS(locale, color, ignoreAuth) {
+function drawMapUS(color, ignoreAuth) {
   const calculateHeight = () => {
     let height =
       Math.max(document.documentElement.clientHeight, window.innerHeight || 0) -
@@ -114,6 +116,67 @@ function drawMapUS(locale, color, ignoreAuth) {
 
   $.getJSON(url, function (response) {
     const result = response;
+
+    sessionStorage.setItem(tmpCode, JSON.stringify(result));
+    render(treemap, result, color, ignoreAuth);
+  });
+
+  function render(treemap, result, color, ignoreAuth) {
+    const nodes = treemap.nodes(result);
+
+    const mapPerf = nodes.reduce((obj, node) => {
+      if (node.condition) {
+        obj[node.name] = node.condition;
+      }
+      return obj;
+    }, {});
+
+    const mapData = nodes[0];
+    initMap(width, mapData, color, ignoreAuth);
+  }
+}
+
+function drawMapHK(color, ignoreAuth) {
+  const calculateHeight = () => {
+    let height =
+      Math.max(document.documentElement.clientHeight, window.innerHeight || 0) -
+      10;
+
+    if (!$(".narrow").is(":visible")) {
+      height -= 280;
+    }
+
+    return height;
+  };
+
+  const height = calculateHeight();
+  $("#body").height(height);
+
+  const width = $("#main-body").width();
+
+  const treemap = d3.layout
+    .treemap()
+    .sort((d1, d2) => d1.value - d2.value)
+    .size([width, height])
+    .value((d) => d.value)
+    .padding((d) => {
+      if (d.depth === 1) {
+        return [17, 1, 1, 1];
+      } else if (d.depth === 2) {
+        return [12, 1, 2, 1];
+      }
+      return 0;
+    });
+
+  //https://11.push2delay.eastmoney.com/api/qt/clist/get?pn=1&pz=99999&np=1&fs=m:128+t:1,m:128+t:3,m:128+t:4&fields=f1,f2,f3,f4,f12,f14,f20,f100
+
+  url =
+    "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/hk_mkt_val.json";
+
+  $.getJSON(url, function (response) {
+    const result = response.data.diff;
+
+    console.log("hk: ", result);
 
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
@@ -4778,6 +4841,68 @@ $(function () {
           },
         });
       },
+      updateDataHK: function (isFirst) {
+        var ignoreAuth = window.ignoreAuth;
+        if (!isFirst && window.pollingChanged) {
+          window.pollingChanged = false;
+          return;
+        }
+
+        var url = null;
+        var condition = "mkt_idx.cur_chng_pct"; //$('#select-change').val()
+        var url =
+          "https://api.minli.wang/dpyt/getMapParamDataV2?param=" + condition;
+
+        $.ajax({
+          type: "GET",
+          //url: "https://11.push2.eastmoney.com/api/qt/clist/get?pn=1&pz=99999&np=1&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f4,f12",
+          url: "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/cn_px_pct.json",
+          dataType: "json",
+          async: false,
+          success: function (t) {
+            var nodes = t.data;
+            var priceNodes = new Array();
+            var stocks = {};
+
+            stocks = t.data;
+            // console.log("nodes: ", nodes);
+            var additional = {};
+            var now = new Date();
+            $.each(stocks, function (prop, val) {
+              if (condition === "act_date") {
+                if (nodes[prop] != null && nodes[prop] !== "") {
+                  var date = new Date(nodes[prop]);
+                  additional[prop] =
+                    date.getFullYear() +
+                    "-" +
+                    (date.getMonth() + 1) +
+                    "-" +
+                    date.getDate();
+                  nodes[prop] = date > now ? -1 : 1;
+                } else {
+                  additional[prop] = "--";
+                  nodes[prop] = null;
+                }
+              } else {
+                // var val = parseFloat(val);
+                var arr = val.split("|");
+                nodes[prop] = isNaN(arr[0]) ? null : parseFloat(arr[0]); // isNaN(val) ? null : parseFloat(val);
+                priceNodes[prop] = arr[1];
+              }
+            });
+            var data = {
+              additional: additional,
+              nodes: nodes,
+              priceNodes: priceNodes,
+            };
+
+            AppDispatcher.handleServerAction({
+              type: ActionTypes.UPDATE_DATA_HK,
+              data: data,
+            });
+          },
+        });
+      },
       updateDataUS: function (isFirst) {
         var ignoreAuth = window.ignoreAuth;
         if (!isFirst && window.pollingChanged) {
@@ -5578,6 +5703,23 @@ $(function () {
               key: "updatePerf",
               value: function (data) {
                 var t = data.nodes;
+                // console.log(t);
+                var priceNodes = data.priceNodes;
+                var additional = data.additional;
+
+                this.nodes.forEach(function (e) {
+                  void 0 !== t[e.name] &&
+                    (e.perf = t[e.name]) & (e.price = priceNodes[e.name]),
+                    additional[e.name] && (e.additional = additional[e.name]);
+                }),
+                  this.countIndustryPerf && this._updateIndustryPerf(),
+                  this.countSectorPerf && this._updateSectorPerf();
+              },
+            },
+            {
+              key: "updatePerfHK",
+              value: function (data) {
+                var t = data.nodes;
                 console.log(t);
                 var priceNodes = data.priceNodes;
                 var additional = data.additional;
@@ -6315,6 +6457,9 @@ $(function () {
         case "us":
           f.updateDataUS(true, ignoreAuth);
           break;
+        case "hk":
+          f.updateDataHK(true, ignoreAuth);
+          break;
       }
 
       // 只有“涨跌幅”的选项需要轮训，其他的不需要
@@ -7045,6 +7190,12 @@ $(function () {
             (x = v()),
             mapStore.emitChange();
           break;
+        case ActionTypes.UPDATE_DATA_HK:
+          treemap.updatePerfHK(action.data),
+            S++,
+            (x = v()),
+            mapStore.emitChange();
+          break;
         case ActionTypes.UPDATE_DATA_US:
           treemap.updatePerfUS(action.data),
             S++,
@@ -7768,6 +7919,11 @@ $(function () {
               ? Math.abs(price).toFixed(2)
               : "--";
             break;
+          case "hk":
+            var stockCode = e.name;
+            px = mkt_hk["dict_hk_px"][stockCode];
+            return px ? px.toFixed(2) : "0.00";
+            break;
           case "United States Overall":
             var stockCode = e.name;
             px = mkt_us["dict_us_px"][stockCode];
@@ -7776,11 +7932,6 @@ $(function () {
           case "ETF":
             var stockCode = e.name;
             px = mkt_us["dict_us_px"][stockCode];
-            return px ? px.toFixed(2) : "0.00";
-            break;
-          case "Hong Kong":
-            var stockCode = e.name;
-            px = mkt_hk["dict_hk_px"][stockCode];
             return px ? px.toFixed(2) : "0.00";
             break;
           case "United Kingdom":
@@ -7811,6 +7962,14 @@ $(function () {
             var upOrDown = brd == "SH" ? "SSE" : "SZSE";
 
             var px = mkt_cn["dict_cn_chg"][stockCode];
+
+            return px
+              ? (px >= 0 ? "▲ " : "▼ ") + Math.abs(px).toFixed(2)
+              : "0.00";
+            break;
+          case "hk":
+            var stockCode = e.name;
+            px = mkt_us["dict_hk_chg"][stockCode];
 
             return px
               ? (px >= 0 ? "▲ " : "▼ ") + Math.abs(px).toFixed(2)
@@ -8707,7 +8866,414 @@ $(function () {
               );
 
               break;
+
+            case "hk":
+              // console.log(t);
+              var stockCode = t.name;
+              var a =
+                  this.state.sparklinesData &&
+                  this.state.sparklinesData[t.name],
+                d =
+                  a && a[a.length - 1]
+                    ? this.state.sparklinesData[t.name][
+                        this.state.sparklinesData[t.name].length - 1
+                      ].toFixed(2)
+                    : "--",
+                r = c.getColorScale(),
+                o = c.getType(),
+                s = t.parent.children.slice().sort(function (e, t) {
+                  return t.dx * t.dy - e.dx * e.dy;
+                }),
+                f = s.length > 15,
+                l =
+                  ("geo" !== o ? t.parent.parent.name + " - " : "") +
+                  t.parent.name;
+
+              var data = [
+                240.22, 242.58, 242.04, 240.61, 248, 248.16, 242.71, 247.81,
+                252.75, 264.6, 258.35, 256.77, 267.56, 266.73, 263.62, 263.1,
+                271.32, 272.17, 269.32, 262.15, 258.06, 252.67, 251.51, 254.77,
+                249.22, 250.16, 249.42, 246.27, 251.11, 255.29, 256.87, 254.15,
+                253.7, 252.32, 248.59, 253.92, 260.79, 265.44, 276.2, 279.43,
+                272.23, 273.78, 272.29, 277.66, 280.57, 276.38, 275.23, 280.51,
+                284.05, 288.3, 287.23, 287.18, 284.34, 291.6, 289.39, 282.83,
+                283.49, 289.84, 286.14, 288.8, 288.37, 288.45, 286.11, 285.76,
+                281.77,
+              ];
+
+              url =
+                "https://finviz.com/api/map_sparklines.ashx?t=" +
+                t.name +
+                "&ty=sec";
+
+              // $.getJSON(url, function (response) {
+              //   const result = response[t.name];
+
+              //   sessionStorage.setItem(tmpCode, JSON.stringify(result));
+              //   render(treemap, result, color, ignoreAuth);
+              // });
+
+              x = d3.scale
+                .linear()
+                .range([
+                  0,
+                  document.getElementById("hover-wrapper").scrollWidth * 0.6,
+                ])
+                .domain([0, data.length]);
+              y = d3.scale
+                .linear()
+                .range([100 - 4, 0])
+                .domain(
+                  d3.extent(data, function (d) {
+                    return d;
+                  })
+                );
+              line = d3.svg
+                .line()
+                .interpolate("basis")
+                .x(function (d, i) {
+                  return x(i);
+                })
+                .y(function (d, i) {
+                  return y(d);
+                });
+
+              market = mkt_us["dict_us_mkt"][stockCode];
+              // console.log(market);
+
+              return React.createElement(
+                "div",
+                {
+                  id: "hover",
+                  // height: $("#div_map2").height(),
+                },
+                React.createElement("h4", null, l),
+                React.createElement(
+                  "table",
+                  {
+                    className: f ? "is-small" : "",
+                    textAlign: "center",
+                    width: "100%",
+                  },
+                  React.createElement(
+                    "tbody",
+                    null,
+
+                    React.createElement(
+                      "tr",
+                      {
+                        key: t.name + "-hover",
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "5",
+                          style: {
+                            // fontSize: "90%",
+                            paddingTop: "10",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        t.description
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "3",
+                          rowSpan: "4",
+                          style: {
+                            paddingLeft: "10",
+                            paddingTop: "10",
+                            paddingRight: "10",
+                          },
+                          className: "ticker",
+                          // paddingTop: "16",
+                          // paddingRight: "16",
+                        },
+                        // React.createElement(
+                        //   "svg",
+                        //   {
+                        //     className: "sparkline white",
+                        //     width:
+                        //       document.getElementById("hover-wrapper")
+                        //         .scrollWidth * 0.6,
+                        //     height: 100,
+                        //   },
+                        //   React.createElement(
+                        //     "g",
+                        //     {
+                        //       transform: "translate(0, 2)",
+                        //     },
+                        //     React.createElement("path", {
+                        //       d: line(data),
+                        //     })
+                        //   )
+                        // )
+                        React.createElement("img", {
+                          className: "smallLine",
+                          width: "100%",
+                          style: {
+                            filter:
+                              "saturate(0) grayscale(1) brightness(10) contrast(10)",
+                          },
+                          //selected stocks
+                          src:
+                            "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
+                            market +
+                            "." +
+                            stockCode +
+                            "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                        })
+                      ),
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "150%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        stockCode
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "200%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        p(t)
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "150%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        q(t)
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            // fontSize: "80%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        i(t)
+                      )
+                    ),
+
+                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    ///////////////////////////////////////////////////////
+
+                    React.createElement(
+                      "tr",
+                      {
+                        key: t.name + "-hover-description",
+                        className: "hovered is-description",
+                        style: {
+                          backgroundColor: r(t.perf),
+                          height: 10,
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "5",
+                        },
+                        null
+                      )
+                    ),
+                    React.createElement(
+                      "tr",
+                      null,
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "5",
+                          style: {
+                            paddingTop: "10",
+                            paddingBottom: "10",
+                          },
+                        },
+                        React.createElement("img", {
+                          className: "smallLine",
+                          width: "100%",
+                          style: {
+                            filter: "invert(1)", //"saturate(0) grayscale(0) brightness(100) contrast(100)"
+                          },
+                          src:
+                            "http://image.sinajs.cn/newchart/usstock/daily/" +
+                            stockCode +
+                            ".gif",
+                        })
+                      )
+                    ),
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered is-description",
+                        style: {
+                          //backgroundColor: r(t.perf),
+                          height: 10,
+                        },
+                      },
+                      React.createElement("td", {
+                        colSpan: "5",
+                        className: "description",
+                      })
+                    ),
+                    s.map(function (t, a) {
+                      if (a > 40) return null;
+                      var c =
+                          e.state.sparklinesData &&
+                          e.state.sparklinesData[t.name],
+                        d = c ? e.state.sparklinesData[t.name] : [];
+                      var listStockCode = t.description; //id.substr(0, t.id.indexOf("."));
+                      // var brd = t.id.split(".")[1];
+                      // var upOrDown = brd == "SH" ? 1 : 0;
+                      return React.createElement(
+                        "tr",
+                        {
+                          key: t.name,
+                        },
+                        React.createElement(
+                          "td",
+                          {
+                            className: "smallticker",
+                            // colSpan: "2",
+                          },
+                          listStockCode
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "smallticker",
+                            // colSpan: "2",
+                          },
+                          t.name
+                        ),
+                        React.createElement(
+                          "td",
+                          null,
+                          React.createElement("img", {
+                            className: "smallLine",
+                            width: 60,
+                            style: {
+                              filter:
+                                t.perf < 0
+                                  ? "hue-rotate(-120deg)"
+                                  : "hue-rotate(120deg)", //"saturate(0) grayscale(1) brightness(10) contrast(10)"
+                            },
+                            //适配https://webquotepic.eastmoney.com/GetPic.aspx?nid=0.000651&imageType=RJY
+                            src:
+                              "https://webquotepic.eastmoney.com/GetPic.aspx?nid=" +
+                              market +
+                              "." +
+                              stockCode +
+                              "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                          })
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "change",
+                            style: {
+                              // fontWeight: 800,
+                              color: r(t.perf),
+                            },
+                          },
+                          p(t)
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "change",
+                            // colSpan: "2",
+                            style: {
+                              fontWeight: 900,
+                              color: r(t.perf),
+                            },
+                          },
+                          i(t)
+                        )
+                      );
+                    })
+                  )
+                )
+              );
+
+              break;
           }
+
           //////HERE/////
         },
         _onMouseMove: function (e) {
