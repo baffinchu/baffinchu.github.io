@@ -176,7 +176,20 @@ function drawMapHK(color, ignoreAuth) {
   $.getJSON(url, function (response) {
     const result = response.data.diff;
 
+    dict_hk_mkv = {
+      "data": {
+        "children": [],
+        "name": "总量",
+        "id": "HK0"
+      }
+    };
+
+    for (let i = 0; i < result.length; i++) {
+      dict_hk_mkv["data"]["children"][] = { name: "123", id: "456" };
+    }
+
     console.log("hk: ", result);
+    console.log("dict: ", dict_hk_mkv);
 
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
