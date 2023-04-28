@@ -257,6 +257,67 @@ function drawMapHK(color, ignoreAuth) {
   }
 }
 
+function drawMapJP(color, ignoreAuth) {
+  const calculateHeight = () => {
+    let height =
+      Math.max(document.documentElement.clientHeight, window.innerHeight || 0) -
+      10;
+
+    if (!$(".narrow").is(":visible")) {
+      height -= 280;
+    }
+
+    return height;
+  };
+
+  const height = calculateHeight();
+  $("#body").height(height);
+
+  const width = $("#main-body").width();
+
+  const treemap = d3.layout
+    .treemap()
+    .sort((d1, d2) => d1.value - d2.value)
+    .size([width, height])
+    .value((d) => d.value)
+    .padding((d) => {
+      if (d.depth === 1) {
+        return [17, 1, 1, 1];
+      } else if (d.depth === 2) {
+        return [12, 1, 2, 1];
+      }
+      return 0;
+    });
+
+  // url = 'https://nikkei225jp.com/cme/'
+
+  url =
+    "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/jp_mkt_val.json";
+
+  $.getJSON(url, function (response) {
+    const result = response.data;
+
+    console.log("result: ", result);
+
+    sessionStorage.setItem(tmpCode, JSON.stringify(result));
+    render(treemap, result, color, ignoreAuth);
+  });
+
+  function render(treemap, result, color, ignoreAuth) {
+    const nodes = treemap.nodes(result);
+
+    const mapPerf = nodes.reduce((obj, node) => {
+      if (node.condition) {
+        obj[node.name] = node.condition;
+      }
+      return obj;
+    }, {});
+
+    const mapData = nodes[0];
+    initMap(width, mapData, color, ignoreAuth);
+  }
+}
+
 function getRangeLegend(colorArr, valueRangeArr) {
   const map_scaleHtml = colorArr
     .map(
@@ -6521,6 +6582,9 @@ $(function () {
         case "hk":
           f.updateDataHK(true, ignoreAuth);
           break;
+        case "jp":
+          f.updateDataHK(true, ignoreAuth);
+          break;
       }
 
       // 只有“涨跌幅”的选项需要轮训，其他的不需要
@@ -7983,6 +8047,9 @@ $(function () {
           case "hk":
             return e.px.toFixed(2 + (e.px < 0.25));
             break;
+          case "jp":
+            return e.px.toFixed(2 + (e.px < 0.25));
+            break;
           case "United States Overall":
             var stockCode = e.name;
             px = mkt_us["dict_us_px"][stockCode];
@@ -8027,6 +8094,9 @@ $(function () {
               : "0.00";
             break;
           case "hk":
+            return e.chg.toFixed(2 + (e.px < 0.25));
+            break;
+          case "jp":
             return e.chg.toFixed(2 + (e.px < 0.25));
             break;
           case "us":
@@ -8923,6 +8993,336 @@ $(function () {
 
             case "hk":
               // console.log(t);
+              var stockCode = t.id;
+              var a =
+                  this.state.sparklinesData &&
+                  this.state.sparklinesData[t.name],
+                d =
+                  a && a[a.length - 1]
+                    ? this.state.sparklinesData[t.name][
+                        this.state.sparklinesData[t.name].length - 1
+                      ].toFixed(2)
+                    : "--",
+                r = c.getColorScale(),
+                o = c.getType(),
+                s = t.parent.children.slice().sort(function (e, t) {
+                  return t.dx * t.dy - e.dx * e.dy;
+                }),
+                f = s.length > 15,
+                l =
+                  ("geo" !== o ? t.parent.parent.name + " - " : "") +
+                  t.parent.name;
+
+              return React.createElement(
+                "div",
+                {
+                  id: "hover",
+                  // height: $("#div_map2").height(),
+                },
+                React.createElement("h4", null, l),
+                React.createElement(
+                  "table",
+                  {
+                    className: f ? "is-small" : "",
+                    textAlign: "center",
+                    width: "100%",
+                  },
+                  React.createElement(
+                    "tbody",
+                    null,
+
+                    React.createElement(
+                      "tr",
+                      {
+                        key: t.name + "-hover",
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "5",
+                          style: {
+                            // fontSize: "90%",
+                            paddingTop: "10",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        stockCode
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "3",
+                          rowSpan: "4",
+                          style: {
+                            paddingLeft: "10",
+                            paddingTop: "10",
+                            paddingRight: "10",
+                          },
+                          className: "ticker",
+                        },
+
+                        React.createElement("img", {
+                          className: "smallLine",
+                          width: "100%",
+                          style: {
+                            filter:
+                              "saturate(0) grayscale(1) brightness(10) contrast(10)",
+                          },
+                          //selected stocks
+                          src:
+                            "https://webquotepic.eastmoney.com/GetPic.aspx?nid=116." +
+                            stockCode.toString().padStart(5, "0") +
+                            "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                        })
+                      ),
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "150%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        t.name
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "200%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        p(t)
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            fontSize: "150%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        q(t)
+                      )
+                    ),
+
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered",
+                        width: "100%",
+                        style: {
+                          backgroundColor: r(t.perf),
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          className: "ticker",
+                          colSpan: "2",
+                          style: {
+                            // fontSize: "80%",
+                            paddingRight: "10",
+                            textAlign: "right",
+                          },
+                        },
+                        i(t)
+                      )
+                    ),
+
+                    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                    ///////////////////////////////////////////////////////
+
+                    React.createElement(
+                      "tr",
+                      {
+                        key: t.name + "-hover-description",
+                        className: "hovered is-description",
+                        style: {
+                          backgroundColor: r(t.perf),
+                          height: 10,
+                        },
+                      },
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "5",
+                        },
+                        null
+                      )
+                    ),
+                    React.createElement(
+                      "tr",
+                      null,
+                      React.createElement(
+                        "td",
+                        {
+                          colSpan: "5",
+                          style: {
+                            paddingTop: "10",
+                            paddingBottom: "10",
+                          },
+                        },
+                        React.createElement("img", {
+                          className: "smallLine",
+                          width: "100%",
+                          style: {
+                            filter: "invert(1)", //"saturate(0) grayscale(0) brightness(100) contrast(100)"
+                          },
+                          src:
+                            "http://image.sinajs.cn/newchart/hk_stock/daily/" +
+                            stockCode.toString().padStart(5, "0") +
+                            ".gif",
+                        })
+                      )
+                    ),
+                    React.createElement(
+                      "tr",
+                      {
+                        className: "hovered is-description",
+                        style: {
+                          //backgroundColor: r(t.perf),
+                          height: 10,
+                        },
+                      },
+                      React.createElement("td", {
+                        colSpan: "5",
+                        className: "description",
+                      })
+                    ),
+                    s.map(function (t, a) {
+                      if (a > 40) return null;
+                      var c =
+                          e.state.sparklinesData &&
+                          e.state.sparklinesData[t.name],
+                        d = c ? e.state.sparklinesData[t.name] : [];
+                      var listStockCode = t.id; //id.substr(0, t.id.indexOf("."));
+                      // var brd = t.id.split(".")[1];
+                      // var upOrDown = brd == "SH" ? 1 : 0;
+                      return React.createElement(
+                        "tr",
+                        {
+                          key: t.name,
+                        },
+                        React.createElement(
+                          "td",
+                          {
+                            className: "smallticker",
+                            // colSpan: "2",
+                          },
+                          listStockCode.toString().padStart(4, "0")
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "smallticker",
+                            // colSpan: "2",
+                          },
+                          t.name
+                        ),
+                        React.createElement(
+                          "td",
+                          null,
+                          React.createElement("img", {
+                            className: "smallLine",
+                            width: 60,
+                            style: {
+                              filter:
+                                t.perf < 0
+                                  ? "hue-rotate(-120deg)"
+                                  : "hue-rotate(120deg)", //"saturate(0) grayscale(1) brightness(10) contrast(10)"
+                            },
+                            //适配https://webquotepic.eastmoney.com/GetPic.aspx?nid=0.000651&imageType=RJY
+                            src:
+                              "https://webquotepic.eastmoney.com/GetPic.aspx?nid=116." +
+                              listStockCode.toString().padStart(5, "0") +
+                              "&imageType=RJY", //"https://chart.jrjimg.cn/pngdata/minpic/pic40/" + stockCode + ".png"
+                          })
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "change",
+                            style: {
+                              // fontWeight: 800,
+                              color: r(t.perf),
+                            },
+                          },
+                          p(t)
+                        ),
+                        React.createElement(
+                          "td",
+                          {
+                            className: "change",
+                            // colSpan: "2",
+                            style: {
+                              fontWeight: 900,
+                              color: r(t.perf),
+                            },
+                          },
+                          i(t)
+                        )
+                      );
+                    })
+                  )
+                )
+              );
+
+              break;
+
+            case "jp":
+              console.log(t);
               var stockCode = t.id;
               var a =
                   this.state.sparklinesData &&
