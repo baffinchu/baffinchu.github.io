@@ -58,8 +58,6 @@ function drawMap(color, ignoreAuth) {
   $.getJSON(url, function (response) {
     const result = response.data;
 
-    console.log("cn: ", result);
-
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
   });
@@ -116,7 +114,7 @@ function drawMapUS(color, ignoreAuth) {
 
   $.getJSON(url, function (response) {
     const result = response;
-    console.log("us raw data: ", result);
+
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
   });
@@ -132,7 +130,6 @@ function drawMapUS(color, ignoreAuth) {
     }, {});
 
     const mapData = nodes[0];
-    console.log("us: ", mapData);
     initMap(width, mapData, color, ignoreAuth);
   }
 }
@@ -202,8 +199,6 @@ function drawMapHK(color, ignoreAuth) {
       companiesByIndustry[industry].push(company);
     });
 
-    // console.log("1: ", companiesByIndustry);
-
     for (let i = 0; i < Object.keys(companiesByIndustry).length; i++) {
       industry = Object.keys(companiesByIndustry)[i];
       dict_hk_mkv["children"].push({
@@ -238,59 +233,8 @@ function drawMapHK(color, ignoreAuth) {
         dict_hk_mkv["children"][i]["value"] += company.f20;
         dict_hk_mkv["children"][i]["id"] = company.f265;
         dict_hk_mkv["value"] += company.f20;
-
-        // console.log(
-        //   ">>> ",
-        //   companiesByIndustry[Object.keys(companiesByIndustry)[i]][j]
-        // );
       }
     }
-
-    // Then, create a new array of objects with the desired structure
-    // const outputArray = Object.entries(companiesByIndustry).map(
-    //   ([industry, companies]) => {
-    //     const valueSum = companies.reduce(
-    //       (sum, company) => sum + company.f20,
-    //       0
-    //     );
-    //     return {
-    //       children: companies.map((company) => ({
-    //         name: company.f14,
-    //         // industry: company.f100.trim() || "房地产信托基金",
-    //         id: Number(company.f12),
-    //         value: company.f20,
-    //       })),
-    //       name: industry.trim() || "房地产信托基金",
-    //       id: companies[0].f265.trim() || "REITS",
-    //       value: valueSum,
-    //     };
-    //   }
-    // );
-
-    // console.log("2: ", outputArray);
-
-    // // Filter out empty children nodes
-    // const filteredArray = outputArray.filter(
-    //   (industry) => industry.children.length > 0
-    // );
-
-    // // Finally, set the output array as the "children" property of the top-level object
-    // if (filteredArray.length > 0) {
-    //   dict_hk_mkv.children = filteredArray;
-    //   dict_hk_mkv.value = filteredArray.reduce(
-    //     (sum, industry) => sum + industry.value,
-    //     0
-    //   );
-    // }
-
-    console.log("hk: ", dict_hk_mkv);
-
-    // for (let i = 0; i < result.length; i++) {
-    //   dict_hk_mkv["data"]["children"][] = { name: "123", id: "456" };
-    // }
-
-    // console.log("hk: ", outputJson);
-    // console.log("dict: ", dict_hk_mkv);
 
     sessionStorage.setItem(tmpCode, JSON.stringify(dict_hk_mkv));
     render(treemap, dict_hk_mkv, color, ignoreAuth);
