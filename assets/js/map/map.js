@@ -311,7 +311,7 @@ function drawMapJP(color, ignoreAuth) {
       for (let i = 0; i < dict_jp_mkv["children"].length; i++) {
         for (
           let j = 0;
-          j < dict_jp_mkv["children"][i]["children"].length;
+          j < dict_jp_mkv["children"][i]["children"][0]["children"].length;
           j++
         ) {
           key = dict_jp_mkv["children"][i]["children"][0]["children"][j]["id"];
@@ -8090,7 +8090,7 @@ $(function () {
             return e.px.toFixed(2 + (e.px < 0.25));
             break;
           case "jp":
-            return e.px.toFixed(2 + (e.px < 0.25));
+            return e.px ? e.px.toFixed(e.dg) : "0.00";
             break;
           case "United States Overall":
             var stockCode = e.name;
@@ -8139,7 +8139,9 @@ $(function () {
             return e.chg.toFixed(2 + (e.px < 0.25));
             break;
           case "jp":
-            return e.chg.toFixed(2 + (e.px < 0.25));
+            return e.chg
+              ? (e.chg >= 0 ? "▲ " : "▼ ") + Math.abs(e.chg).toFixed(e.dg)
+              : "0.00";
             break;
           case "us":
             var stockCode = e.name;
