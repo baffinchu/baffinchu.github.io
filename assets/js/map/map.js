@@ -294,6 +294,7 @@ function drawMapHK(color, ignoreAuth) {
 
     sessionStorage.setItem(tmpCode, JSON.stringify(dict_hk_mkv));
     render(treemap, dict_hk_mkv, color, ignoreAuth);
+    render(treemap, dict_hk_mkv, color, ignoreAuth);
   });
 
   function render(treemap, result, color, ignoreAuth) {
