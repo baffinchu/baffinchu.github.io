@@ -308,16 +308,31 @@ function drawMapJP(color, ignoreAuth) {
     $.getJSON(url_indu, function (resp) {
       const indu = resp;
 
-      console.log("indu: ", indu);
+      for (let i = 0; i < indu["children"].length; i++) {
+        for (let j = 0; j < indu["children"][i]["children"].length; j++) {
+          key = indu["children"][i]["children"][j]["id"];
 
-      sessionStorage.setItem(tmpCode, JSON.stringify(result));
-      render(treemap, result, color, ignoreAuth);
+          if (dict_jp_tmp[key]) {
+            indu["children"][i]["children"][j]["dg"] =
+              dict_jp_tmp[key]["LastPairDecimal"] * 2 || 0;
+            indu["children"][i]["children"][j]["px"] =
+              dict_jp_tmp[key]["Last"] || 0;
+            indu["children"][i]["children"][j]["value"] =
+              dict_jp_tmp[key]["FundamentalMarketCap"] || 0;
+            indu["children"][i]["children"][j]["chg"] =
+              dict_jp_tmp[key]["Chg"] || 0;
+            indu["children"][i]["children"][j]["perf"] =
+              dict_jp_tmp[key]["ChgPct"] || 0;
+          }
+        }
+      }
+
+      // console.log("jpjp: ", indu);
+
+      sessionStorage.setItem(tmpCode, JSON.stringify(indu));
+      render(treemap, indu, color, ignoreAuth);
+      render(treemap, indu, color, ignoreAuth);
     });
-
-    // console.log("result: ", dict_jp_tmp);
-
-    sessionStorage.setItem(tmpCode, JSON.stringify(result));
-    render(treemap, result, color, ignoreAuth);
   });
 
   function render(treemap, result, color, ignoreAuth) {
