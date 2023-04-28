@@ -306,32 +306,42 @@ function drawMapJP(color, ignoreAuth) {
     }
 
     $.getJSON(url_indu, function (resp) {
-      const indu = resp;
+      const dict_jp_mkv = resp;
 
-      for (let i = 0; i < indu["children"].length; i++) {
-        for (let j = 0; j < indu["children"][i]["children"].length; j++) {
-          key = indu["children"][i]["children"][j]["id"];
+      for (let i = 0; i < dict_jp_mkv["children"].length; i++) {
+        for (
+          let j = 0;
+          j < dict_jp_mkv["children"][i]["children"].length;
+          j++
+        ) {
+          key = dict_jp_mkv["children"][i]["children"][0]["children"][j]["id"];
 
           if (dict_jp_tmp[key]) {
-            indu["children"][i]["children"][j]["dg"] =
-              dict_jp_tmp[key]["LastPairDecimal"] * 2 || 0;
-            indu["children"][i]["children"][j]["px"] =
-              dict_jp_tmp[key]["Last"] || 0;
-            indu["children"][i]["children"][j]["value"] =
-              dict_jp_tmp[key]["FundamentalMarketCap"] || 0;
-            indu["children"][i]["children"][j]["chg"] =
-              dict_jp_tmp[key]["Chg"] || 0;
-            indu["children"][i]["children"][j]["perf"] =
-              dict_jp_tmp[key]["ChgPct"] || 0;
+            dict_jp_mkv["children"][i]["children"][0]["children"][j]["dg"] =
+              dict_jp_tmp[key]["LastPairDecimal"] * 2;
+            dict_jp_mkv["children"][i]["children"][0]["children"][j]["px"] =
+              dict_jp_tmp[key]["Last"];
+            dict_jp_mkv["children"][i]["children"][0]["children"][j]["value"] =
+              dict_jp_tmp[key]["FundamentalMarketCap"];
+            dict_jp_mkv["children"][i]["children"][0]["children"][j]["chg"] =
+              dict_jp_tmp[key]["Chg"];
+            dict_jp_mkv["children"][i]["children"][0]["children"][j]["perf"] =
+              dict_jp_tmp[key]["ChgPct"];
+
+            dict_jp_mkv["children"][i]["children"][0]["value"] +=
+              dict_jp_tmp[key]["FundamentalMarketCap"];
+            dict_jp_mkv["children"][i]["value"] +=
+              dict_jp_tmp[key]["FundamentalMarketCap"];
+            dict_jp_mkv["value"] += dict_jp_tmp[key]["FundamentalMarketCap"];
           }
         }
       }
 
       // console.log("jpjp: ", indu);
 
-      sessionStorage.setItem(tmpCode, JSON.stringify(indu));
-      render(treemap, indu, color, ignoreAuth);
-      render(treemap, indu, color, ignoreAuth);
+      sessionStorage.setItem(tmpCode, JSON.stringify(dict_jp_mkv));
+      render(treemap, dict_jp_mkv, color, ignoreAuth);
+      render(treemap, dict_jp_mkv, color, ignoreAuth);
     });
   });
 
