@@ -232,7 +232,7 @@ function drawMapHK(color, ignoreAuth) {
           perf: company.f3 / 100,
           digit: company.f1,
           px: company.f2 * 10 ** -company.f1,
-          chg: company.f2 * 10 ** -company.f1,
+          chg: company.f4 * 10 ** -company.f1,
         });
 
         dict_hk_mkv["children"][i]["value"] += company.f20;
