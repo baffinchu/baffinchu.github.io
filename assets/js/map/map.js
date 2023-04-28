@@ -294,10 +294,27 @@ function drawMapJP(color, ignoreAuth) {
   url =
     "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/jp_mkt_val.json";
 
+  url_indu =
+    "https://raw.githubusercontent.com/baffinchu/baffinchu.github.io/main/assets/data/jp_indu.json";
+
   $.getJSON(url, function (response) {
     const result = response.data;
 
-    console.log("result: ", result);
+    dict_jp_tmp = {};
+    for (let i = 0; i < result.length; i++) {
+      dict_jp_tmp[Number(result[i]["Symbol"])] = result[i];
+    }
+
+    $.getJSON(url_indu, function (resp) {
+      const indu = resp;
+
+      console.log("indu: ", indu);
+
+      sessionStorage.setItem(tmpCode, JSON.stringify(result));
+      render(treemap, result, color, ignoreAuth);
+    });
+
+    // console.log("result: ", dict_jp_tmp);
 
     sessionStorage.setItem(tmpCode, JSON.stringify(result));
     render(treemap, result, color, ignoreAuth);
