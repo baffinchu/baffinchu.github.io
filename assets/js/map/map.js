@@ -333,11 +333,13 @@ function drawMapJP(color, ignoreAuth) {
             dict_jp_mkv["children"][i]["value"] +=
               dict_jp_tmp[key]["FundamentalMarketCap"];
             dict_jp_mkv["value"] += dict_jp_tmp[key]["FundamentalMarketCap"];
+
+            delete dict_jp_tmp[key];
           }
         }
       }
 
-      // console.log("jpjp: ", indu);
+      console.log("dict_jp_tmp: ", Object.keys(dict_jp_tmp).length);
 
       sessionStorage.setItem(tmpCode, JSON.stringify(dict_jp_mkv));
       render(treemap, dict_jp_mkv, color, ignoreAuth);
